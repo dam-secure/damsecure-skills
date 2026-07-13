@@ -1,0 +1,12 @@
+# Code owners for damsecure-skills.
+# Every PR touching these paths requires an approving review from an owner
+# below (enforced by the branch ruleset: "require review from Code Owners").
+#
+# Owners MUST be Dam Secure employees with write access to this repo. External
+# forks may open PRs, but they cannot be merged without an owner's approval.
+#
+# TODO (org owner): replace the individual maintainer with the employee team
+# once a standard (non-enterprise) org team with write access exists, e.g.
+#   *  @dam-secure/secure-spec-maintainers
+
+* @wesley-damsecure

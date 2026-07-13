@@ -1,0 +1,8 @@
+version: 2
+updates:
+  # Keep GitHub Actions (e.g. actions/checkout) patched against known CVEs.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
