@@ -39,24 +39,24 @@ A single skill, `secure-spec-setup`, distributed as a Claude Code plugin via a g
 | Built-in plan paths | `specs/`, `plans/`, `rfcs/`, `proposals/`, `docs/plans/`, `.claude/plans/`, `*.plan.md` |
 | CLI Claude install | `claude plugin marketplace add ~/.damsecure/plugin/claude` + `claude plugin install damsecure@damsecure-local` |
 
-## Multi-editor support (Claude, Cursor, Copilot)
+## Multi-editor support (Claude, Cursor)
 
-`SKILL.md` (the Agent Skills open standard) is read natively by Claude Code,
-Cursor, and Copilot as of Dec 2025 / Jan 2026 — so one file serves all three.
-No single directory is scanned by all three, so install targets differ:
+`SKILL.md` (the Agent Skills open standard) is read natively by both Claude Code
+and Cursor — so one file serves both. No single directory is scanned by both, so
+install targets differ:
 
-- `.claude/skills/<name>/` — read by **Claude Code and Copilot**.
+- `.claude/skills/<name>/` — read by **Claude Code**.
 - `.cursor/skills/<name>/` — read by **Cursor** (also `.agents/skills/`; globals `~/.cursor/skills`).
 
 `install.sh` copies the skill into the right dir(s) per `--tool`/`--scope`; the
 Claude plugin marketplace remains the premium Claude path. The `SKILL.md` is
 editor-aware only in the two steps that differ (post-install reload, MCP auth),
-via a per-editor table the running agent matches to its own environment. Codex
-also reads `SKILL.md` (`.agents/skills`) but is out of current scope.
+via a per-editor table the running agent matches to its own environment.
 
 ## Out of scope (for now)
 
-- Global/user-scope install for **Copilot** (it reads repo `.claude/skills`; no
-  simple global dir) — project scope only.
+- **Copilot** and **Codex** — both also read the Agent Skills `SKILL.md`
+  (Copilot from repo `.claude/skills`; Codex from `.agents/skills`), so they can
+  be added back later with minimal change, but are not targeted now.
 - Publishing to a shared/central marketplace registry.
 - Folding the skill back into the CLI plugin once a customer is set up.

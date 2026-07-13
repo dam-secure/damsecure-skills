@@ -9,7 +9,7 @@ description: Use when a user wants to install, set up, onboard, or connect Dam S
 
 Guides a user end-to-end through Dam Secure **Secure Spec** onboarding. Secure Spec reviews your implementation **plans** for security issues before you write code, via an editor plugin/extension (hooks + an MCP server) that the `damsecure` CLI installs.
 
-This skill works in **Claude Code, Cursor, and GitHub Copilot**. The flow is identical; only two steps differ per editor (post-install reload in Step 2, MCP auth in Step 4). Detect which editor you're running in and follow the matching row in those steps.
+This skill works in **Claude Code and Cursor**. The flow is identical; only two steps differ per editor (post-install reload in Step 2, MCP auth in Step 4). Detect which editor you're running in and follow the matching row in those steps.
 
 Run the five steps **in order**. Each step gates the next: the CLI must be installed before plans can be configured, and the plugin must be loaded before the MCP server can authenticate. Do not skip ahead or batch steps.
 
@@ -20,7 +20,7 @@ Official reference: https://docs.damsecure.ai/secure-spec/installation
 | Thing | Value |
 |-------|-------|
 | Install command | `curl -fsSL https://app.damsecure.ai/resources/cli/install.sh \| bash` |
-| Setup (run by installer) | `damsecure setup` (auto-detects Claude / Cursor / VS Code+Copilot) |
+| Setup (run by installer) | `damsecure setup` (auto-detects your editors) |
 | Set plans directory | `damsecure plan-dirs set <dir>` |
 | Plans config file | `~/.damsecure/config.json` (`planDirs` key) |
 | MCP server | `damsecure` → `https://api.damsecure.ai/mcp` (HTTP, OAuth) |
@@ -48,7 +48,6 @@ If the user prefers, they can run it themselves in a terminal instead. Then relo
 |--------|-------------|
 | Claude Code | run `/reload-plugins` (or restart Claude Code) |
 | Cursor | open MCP settings and enable/refresh the `damsecure` server (or reload the window) |
-| VS Code + Copilot | reload the window (Command Palette → *Developer: Reload Window*) |
 
 ## Step 3 — Confirm and set the plans directory
 
@@ -70,7 +69,6 @@ The `damsecure` MCP server is registered but not yet authenticated. This is a **
 |--------|-------------|
 | Claude Code | invoke the `mcp__damsecure__authenticate` tool directly to force the prompt. Fallback: `/mcp` → **damsecure** → Enter → **Authenticate** |
 | Cursor | Settings → **MCP** → **damsecure** → **Connect** / **Login** → complete OAuth |
-| VS Code + Copilot | open the MCP view (or `mcp.json`) → **Start** the `damsecure` server → complete OAuth |
 
 Complete the browser sign-in when prompted. If the server or auth tool isn't visible yet, the user hasn't reloaded since Step 2 — do the reload for their editor and retry.
 

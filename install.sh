@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
-# Install the Dam Secure "secure-spec-setup" skill for Claude Code, Cursor,
-# and/or GitHub Copilot. The skill itself is a portable Agent Skills SKILL.md
-# that all three editors read — only the install directory differs:
+# Install the Dam Secure "secure-spec-setup" skill for Claude Code and/or Cursor.
+# The skill itself is a portable Agent Skills SKILL.md that both editors read —
+# only the install directory differs:
 #
-#   Claude Code + Copilot  ->  .claude/skills/<name>/    (both read this dir)
-#   Cursor                 ->  .cursor/skills/<name>/
+#   Claude Code  ->  .claude/skills/<name>/
+#   Cursor       ->  .cursor/skills/<name>/
 #
 # Usage:
-#   ./install.sh                         # install for all editors, project scope
-#   ./install.sh --tool cursor           # just Cursor
-#   ./install.sh --tool claude,copilot   # comma-separated subset
-#   ./install.sh --scope user            # install into ~/ (global) instead of ./
+#   ./install.sh                     # install for all editors, project scope
+#   ./install.sh --tool cursor       # just Cursor (or: claude / claude,cursor)
+#   ./install.sh --scope user        # install into ~/ (global) instead of ./
 #
 # Runnable from a clone, or piped:  curl -fsSL <raw>/install.sh | bash
 set -euo pipefail
@@ -20,13 +19,13 @@ REPO_RAW="https://raw.githubusercontent.com/dam-secure/damsecure-skills/main"
 SRC_SUBPATH="plugins/${SKILL}/skills/${SKILL}"
 FILES=("SKILL.md" "discover-plans.md")
 
-TOOLS="claude,cursor,copilot"
+TOOLS="claude,cursor"
 SCOPE="project"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --tool)  TOOLS="$2"; shift 2 ;;
     --scope) SCOPE="$2"; shift 2 ;;
-    -h|--help) sed -n '2,17p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
     *) echo "unknown arg: $1" >&2; exit 2 ;;
   esac
 done
@@ -51,9 +50,9 @@ add_root() { for r in "${roots[@]:-}"; do [[ "$r" == "$1" ]] && return; done; ro
 IFS=',' read -ra selected <<< "$TOOLS"
 for t in "${selected[@]}"; do
   case "$t" in
-    claude|copilot) add_root "$base/.claude/skills" ;;   # both editors read .claude/skills
-    cursor)         add_root "$base/.cursor/skills" ;;
-    *) echo "unknown tool: $t (expected claude, cursor, or copilot)" >&2; exit 2 ;;
+    claude) add_root "$base/.claude/skills" ;;
+    cursor) add_root "$base/.cursor/skills" ;;
+    *) echo "unknown tool: $t (expected claude or cursor)" >&2; exit 2 ;;
   esac
 done
 
