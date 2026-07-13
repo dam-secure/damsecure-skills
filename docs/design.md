@@ -22,7 +22,7 @@ A single skill, `secure-spec-setup`, distributed as a Claude Code plugin via a g
 
 ## Key decisions
 
-- **Distribution = standalone git plugin marketplace.** Most widely used first-party mechanism; the CLI itself uses `claude plugin marketplace add` internally. Must be independent of the CLI because of the chicken-and-egg: the skill guides the CLI install, so it can't be delivered by the CLI's own plugin.
+- **Distribution = a multi-plugin git marketplace (`dam-secure/damsecure-skills`, marketplace name `damsecure`).** Most widely used first-party mechanism; the CLI itself uses `claude plugin marketplace add` internally. Each skill is packaged as its own independently-installable plugin under `plugins/<name>/`, so users pick exactly what they want (`/plugin` menu, or `/plugin install <name>@damsecure`). `secure-spec-setup` is the first plugin. Must be independent of the CLI because of the chicken-and-egg: the onboarding skill guides the CLI install, so it can't be delivered by the CLI's own plugin.
 - **Fully-guided, not hands-off.** The skill runs discovery and `plan-dirs set` itself, confirms once before `curl|bash`, and triggers the auth tool — but never completes browser auth for the user (it can't).
 - **Two OAuth flows are surfaced explicitly** (CLI in Step 2, MCP in Step 4) so the second prompt isn't a surprise.
 

@@ -1,50 +1,57 @@
-# Secure Spec Onboarding
+# Dam Secure Skills
 
-A Claude Code **plugin marketplace** that ships one skill — `secure-spec-setup` — which walks you through installing and connecting [Dam Secure Secure Spec](https://docs.damsecure.ai/secure-spec/installation).
+A Claude Code **plugin marketplace** for Dam Secure. Add it once, then install whichever skills you want.
 
-## Install
-
-In Claude Code, add this repo as a marketplace and install the plugin:
+## Use it
 
 ```
-/plugin marketplace add dam-secure/secure-spec-onboarding
-/plugin install secure-spec-setup@secure-spec-onboarding
+/plugin marketplace add dam-secure/damsecure-skills
+/plugin                                       # browse the menu and pick
 ```
 
-Then run the skill:
+Or install a specific plugin directly:
 
 ```
-/secure-spec-setup
+/plugin install secure-spec-setup@damsecure
 ```
 
-or just ask Claude to "set up Secure Spec".
+Update later with `/plugin marketplace update damsecure`.
 
-> Prefer a local checkout? Clone this repo and run
-> `/plugin marketplace add /path/to/secure-spec-onboarding` instead of the GitHub shorthand.
+> Local checkout? `/plugin marketplace add /path/to/damsecure-skills`.
 
-## What the skill does
+## Available skills
 
-1. **Reviews where plans live** — dispatches a subagent to find your repo's plans/specs directory (read-only).
-2. **Installs the CLI** — runs `curl -fsSL https://app.damsecure.ai/resources/cli/install.sh | bash` (with your confirmation), which authenticates the CLI and installs the Secure Spec plugin.
-3. **Confirms the plans directory** — you approve the discovered directory (or supply your own); the skill persists it with `damsecure plan-dirs set`.
-4. **Connects the MCP server** — triggers the `damsecure` MCP OAuth prompt directly, then verifies the connection.
+| Plugin | What it does |
+|--------|--------------|
+| `secure-spec-setup` | Guided [Secure Spec](https://docs.damsecure.ai/secure-spec/installation) onboarding — discovers your plans directory, installs the CLI, sets `plan-dirs`, and connects the MCP server. |
 
-After setup, saving an implementation plan under your configured directory triggers Secure Spec's automatic security review.
-
-## Why a plugin marketplace?
-
-A git-based plugin marketplace is Claude Code's first-party distribution mechanism — the same one the `damsecure` CLI uses internally. It's the most widely used way to share a skill: users pull it with two commands, and updates arrive via `/plugin marketplace update`. This skill is distributed **separately from the CLI on purpose** — it guides the CLI install, so it must be obtainable before anything Dam Secure is on the machine.
+_(More to come — each new skill ships as its own installable plugin.)_
 
 ## Layout
 
 ```
 .claude-plugin/
-  marketplace.json          # marketplace metadata + plugin list
-  plugin.json               # the secure-spec-setup plugin manifest
-skills/
-  secure-spec-setup/
-    SKILL.md                # the five-step walkthrough
-    discover-plans.md       # subagent brief for plan discovery
-docs/
-  design.md                 # design notes / spec
+  marketplace.json          # the marketplace: lists every plugin
+plugins/
+  secure-spec-setup/        # one plugin = one installable unit
+    .claude-plugin/plugin.json
+    skills/secure-spec-setup/
+      SKILL.md
+      discover-plans.md
+docs/design.md
 ```
+
+## Add a new skill
+
+1. Create `plugins/<skill-name>/`.
+2. Add `plugins/<skill-name>/.claude-plugin/plugin.json` (`name`, `description`, `version`, `author`, `keywords`).
+3. Add the skill under `plugins/<skill-name>/skills/<skill-name>/SKILL.md` (plus any supporting files).
+4. Append an entry to the `plugins` array in `.claude-plugin/marketplace.json` with `source: "./plugins/<skill-name>"`.
+
+Each plugin is versioned independently, so users choose exactly what they install.
+
+> **Bundling:** a single plugin may contain several related skills (put multiple dirs under its `skills/`). Prefer one-plugin-per-skill for maximum user choice; bundle only when skills are always used together.
+
+## Why a marketplace?
+
+A git-based plugin marketplace is Claude Code's first-party distribution mechanism — the same one the `damsecure` CLI uses internally. Users pull it with one command and pick individual plugins. The onboarding skill lives here (not inside the CLI's own plugin) on purpose: it guides the CLI install, so it must be obtainable before anything Dam Secure is on the machine.
