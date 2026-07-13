@@ -39,8 +39,24 @@ A single skill, `secure-spec-setup`, distributed as a Claude Code plugin via a g
 | Built-in plan paths | `specs/`, `plans/`, `rfcs/`, `proposals/`, `docs/plans/`, `.claude/plans/`, `*.plan.md` |
 | CLI Claude install | `claude plugin marketplace add ~/.damsecure/plugin/claude` + `claude plugin install damsecure@damsecure-local` |
 
+## Multi-editor support (Claude, Cursor, Copilot)
+
+`SKILL.md` (the Agent Skills open standard) is read natively by Claude Code,
+Cursor, and Copilot as of Dec 2025 / Jan 2026 — so one file serves all three.
+No single directory is scanned by all three, so install targets differ:
+
+- `.claude/skills/<name>/` — read by **Claude Code and Copilot**.
+- `.cursor/skills/<name>/` — read by **Cursor** (also `.agents/skills/`; globals `~/.cursor/skills`).
+
+`install.sh` copies the skill into the right dir(s) per `--tool`/`--scope`; the
+Claude plugin marketplace remains the premium Claude path. The `SKILL.md` is
+editor-aware only in the two steps that differ (post-install reload, MCP auth),
+via a per-editor table the running agent matches to its own environment. Codex
+also reads `SKILL.md` (`.agents/skills`) but is out of current scope.
+
 ## Out of scope (for now)
 
-- Non-Claude editor walkthroughs beyond fallback pointers (Cursor/VS Code/Copilot auth is noted, not orchestrated).
+- Global/user-scope install for **Copilot** (it reads repo `.claude/skills`; no
+  simple global dir) — project scope only.
 - Publishing to a shared/central marketplace registry.
 - Folding the skill back into the CLI plugin once a customer is set up.

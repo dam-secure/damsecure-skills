@@ -1,57 +1,97 @@
 # Dam Secure Skills
 
-A Claude Code **plugin marketplace** for Dam Secure. Add it once, then install whichever skills you want.
+Reusable skills for AI coding agents, published by Dam Secure. Each skill is an
+[Agent Skills](https://agentskills.io) `SKILL.md` — a single portable format that
+**Claude Code, Cursor, and GitHub Copilot all read natively**. The only thing
+that differs per editor is which directory the skill is installed into.
 
-## Use it
+## Install
+
+Pick your editor. The one-liner below installs every skill's entry points for
+all three editors in the current project; the per-editor options are narrower.
+
+### Claude Code (recommended: versioned plugin marketplace)
 
 ```
 /plugin marketplace add dam-secure/damsecure-skills
-/plugin                                       # browse the menu and pick
-```
-
-Or install a specific plugin directly:
-
-```
 /plugin install secure-spec-setup@damsecure
 ```
 
-Update later with `/plugin marketplace update damsecure`.
+Updates via `/plugin marketplace update damsecure`. (No script runs — Claude
+manages the plugin.)
 
-> Local checkout? `/plugin marketplace add /path/to/damsecure-skills`.
+### Cursor / Copilot / Claude (copy the skill into your project)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dam-secure/damsecure-skills/main/install.sh | bash
+```
+
+Or clone and run locally (no piping):
+
+```bash
+git clone https://github.com/dam-secure/damsecure-skills
+./damsecure-skills/install.sh --tool cursor        # or: claude,copilot  / omit for all
+./damsecure-skills/install.sh --scope user         # install globally (~/) instead of ./
+```
+
+The installer only **copies markdown** into your editor's skills directory:
+
+| Editor(s) | Directory it reads |
+|-----------|--------------------|
+| Claude Code **and** Copilot | `.claude/skills/<name>/` |
+| Cursor | `.cursor/skills/<name>/` |
+
+Then open your editor there and ask it to "set up Secure Spec", or invoke
+`/secure-spec-setup` directly (Claude Code, Cursor).
+
+> **Copilot** reads skills from the repo's `.claude/skills/` — so `--tool copilot`
+> installs at **project scope**. **Claude** and **Cursor** also support global
+> install via `--scope user` (`~/.claude/skills`, `~/.cursor/skills`).
 
 ## Available skills
 
-| Plugin | What it does |
-|--------|--------------|
-| `secure-spec-setup` | Guided [Secure Spec](https://docs.damsecure.ai/secure-spec/installation) onboarding — discovers your plans directory, installs the CLI, sets `plan-dirs`, and connects the MCP server. |
+| Skill | What it does | Claude | Cursor | Copilot |
+|-------|--------------|:------:|:------:|:-------:|
+| `secure-spec-setup` | Guided [Secure Spec](https://docs.damsecure.ai/secure-spec/installation) onboarding — finds your plans directory, installs the CLI, sets `plan-dirs`, and connects the MCP server. | ✅ | ✅ | ✅ |
 
-_(More to come — each new skill ships as its own installable plugin.)_
+_(Each new skill ships as its own installable unit.)_
+
+## Why one SKILL.md works everywhere
+
+`SKILL.md` (YAML frontmatter `name` + `description`, then a markdown body) is the
+open Agent Skills standard, now consumed by Claude Code, Cursor, and Copilot. The
+`secure-spec-setup` skill is editor-aware in the two steps that differ (post-install
+reload, MCP auth) and tells the agent to follow the row for the editor it's running
+in — so the same file drives all three.
 
 ## Layout
 
 ```
 .claude-plugin/
-  marketplace.json          # the marketplace: lists every plugin
+  marketplace.json          # Claude Code marketplace: lists every plugin
 plugins/
-  secure-spec-setup/        # one plugin = one installable unit
+  secure-spec-setup/        # Claude plugin form of the skill
     .claude-plugin/plugin.json
     skills/secure-spec-setup/
-      SKILL.md
-      discover-plans.md
-docs/design.md
+      SKILL.md              # the portable, editor-aware skill (source of truth)
+      discover-plans.md     # subagent brief for plan discovery
+install.sh                  # copies a skill into Cursor/Copilot/Claude skills dirs
+docs/                       # design + security-hardening notes
 ```
 
 ## Add a new skill
 
-1. Create `plugins/<skill-name>/`.
-2. Add `plugins/<skill-name>/.claude-plugin/plugin.json` (`name`, `description`, `version`, `author`, `keywords`).
-3. Add the skill under `plugins/<skill-name>/skills/<skill-name>/SKILL.md` (plus any supporting files).
-4. Append an entry to the `plugins` array in `.claude-plugin/marketplace.json` with `source: "./plugins/<skill-name>"`.
+1. Create `plugins/<skill-name>/.claude-plugin/plugin.json` and
+   `plugins/<skill-name>/skills/<skill-name>/SKILL.md`.
+2. Append it to the `plugins` array in `.claude-plugin/marketplace.json`
+   (`source: "./plugins/<skill-name>"`).
+3. Keep the `SKILL.md` editor-agnostic where behavior differs, so `install.sh`
+   places one file that works in every editor.
 
-Each plugin is versioned independently, so users choose exactly what they install.
+## Contributing & security
 
-> **Bundling:** a single plugin may contain several related skills (put multiple dirs under its `skills/`). Prefer one-plugin-per-skill for maximum user choice; bundle only when skills are always used together.
-
-## Why a marketplace?
-
-A git-based plugin marketplace is Claude Code's first-party distribution mechanism — the same one the `damsecure` CLI uses internally. Users pull it with one command and pick individual plugins. The onboarding skill lives here (not inside the CLI's own plugin) on purpose: it guides the CLI install, so it must be obtainable before anything Dam Secure is on the machine.
+Contribution is restricted to Dam Secure employees — see
+[`CONTRIBUTING.md`](CONTRIBUTING.md). This repo distributes code that runs on
+customer machines; report vulnerabilities per [`SECURITY.md`](SECURITY.md).
+`main` is protected (PR + review + CI). Details in
+[`docs/security-hardening.md`](docs/security-hardening.md).
