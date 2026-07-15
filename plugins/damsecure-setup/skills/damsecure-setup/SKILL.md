@@ -129,19 +129,25 @@ To scope a rule to specific projects, use `enable_rule_for_project` / `disable_r
 
 # Phase 3: Use (recurring triage)
 
-This is the day-to-day loop, and the skill's job here is mostly to **orient the user**. For each of the two flows below, explain three things — *what it is*, *where to find it*, and *how to configure it* — then hand off to `triage.md` (in this skill's directory) for the actual step-by-step. Both flows are re-entrant; a user can invoke either one on its own once connected.
+This is the day-to-day loop. Once Connect and Configure are done, the recurring workflow is:
 
-## Part C1: The PR CI check and its findings
+1. **You open a pull request for review.** Any non-draft PR against the connected repo automatically triggers a scan.
+2. **Dam Secure runs as a CI/CD check on the PR.** Look for the **Dam Secure** entry in the PR's **Checks** / status section on GitHub — its pass/fail state tells you whether the scan surfaced anything.
+3. **You triage the findings that check produced.** Bring them into the editor over MCP (scoped by the PR's branch) and decide each one: confirm, dismiss, or mark fixed.
 
-**What it is.** When a user opens a pull request (open, not draft), the Dam Secure GitHub App runs a CI check on that branch and records any findings against it. The check is a GitHub construct — there is no PR or CI-check object over MCP — so what you actually work with are the *findings it produced*, scoped by the PR's branch name.
+The skill's job here is mostly to **orient the user** to that loop. For each of the two flows below, explain three things — *what it is*, *where to find it*, and *how to configure it* — then hand off to `triage.md` (in this skill's directory) for the actual step-by-step. Both flows are re-entrant; a user can invoke either one on its own once connected.
+
+## Part C1: The PR CI/CD check and its findings
+
+**What it is.** When a user opens a pull request for review (open, not draft), the Dam Secure GitHub App runs a **CI/CD check** on that branch and records any findings against it. It shows up alongside your other checks on the PR, named **Dam Secure**. The check itself is a GitHub construct — there is no PR or CI-check object over MCP — so what you actually work with in the editor are the *findings it produced*, scoped by the PR's branch name.
 
 **Where to find it.**
-- *The check itself* lives on GitHub: the PR's **Checks** / status section shows the Dam Secure run and its pass/fail state.
+- *The check itself* lives on GitHub: open the PR and look at its **Checks** / status section for the **Dam Secure** run and its pass/fail state. That's the signal that a scan ran and whether it flagged anything.
 - *The findings* are surfaced two ways — in the Dam Secure app, and over MCP via `list_issues branch=<branch>`, which scopes to the latest scan on that branch and exposes a "ready-for-review" count.
 
 **How to configure it.** The check is wired up by connecting the repo's GitHub App in Part A; there is no MCP toggle for it, and scans run automatically on push/PR (no manual scan-trigger tool). Its behavior — which rules run, severity gating, whether it blocks merge — is configured in the Dam Secure app under the repository's settings.
 
-**To triage the findings**, follow Flow C1 in `triage.md` (branch → `list_issues` → `get_issue` → `confirm_finding` / `dismiss_finding` / `fix_finding`).
+**To triage the findings**, follow Flow C1 in `triage.md` (confirm the Dam Secure check on the PR → branch → `list_issues` → `get_issue` → `confirm_finding` / `dismiss_finding` / `fix_finding`).
 
 ## Part C2: Outstanding issues
 
