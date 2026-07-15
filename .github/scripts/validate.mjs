@@ -1,5 +1,5 @@
 // Validates the marketplace, every plugin manifest, and every skill.
-// No external dependencies — runs on a stock Node.js runner.
+// No external dependencies; runs on a stock Node.js runner.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
