@@ -109,12 +109,16 @@ Keep the repo `id` from `list_repositories`; it is the `repositoryId` used to fi
 
 ## Part B: Review and add rules
 
-Rules are what Dam Secure scans for. Two kinds:
+Rules are what Dam Secure scans your code for. The goal here is to give the user a quick read on their coverage, then offer to extend it.
 
-- **Built-in / vulnerability rules** we maintain for you: `list_rules type=vulnerability`.
-- **Custom / team rules** you own: `list_rules type=team`.
+**Report what exists.** If the repo appeared in Part A, call `list_rules` and give the user a short summary — just two facts:
 
-Walk the user through both lists so they see what is already covering their code. Then offer to add a custom rule for anything specific to their codebase. Create one with `create_rule` (only `team` rules can be created via MCP):
+- **How many rules** are active for the repo.
+- **Which categories** those rules fall into (and roughly how many per category).
+
+Keep it to that count-and-categories summary; the point is to show the *shape* of their coverage, not to read every rule line by line. If Part A came back empty (no repo connected yet), say so — nothing is scanning until the repo is onboarded — and move on to finish Phase 2.
+
+**Add a custom rule** for anything specific to their codebase. Create one with `create_rule`:
 
 - Required: `rule` (short name), `ruleDetails` (the prompt/what to look for), `category`.
 - Optional: `severity` (`critical`/`high`/`medium`/`low`/`info`, default `medium`), `rationale`, `cwe`, `status` (`disabled`/`draft`/`live`, default `live`).
@@ -125,28 +129,31 @@ To scope a rule to specific projects, use `enable_rule_for_project` / `disable_r
 
 # Phase 3: Use (recurring triage)
 
-This is the day-to-day loop. Both flows are re-entrant; a user can invoke either one on its own once connected. The detailed step-by-step for both lives in `triage.md` (in this skill's directory); follow it, and read the summary here first so you pick the right entry point.
+This is the day-to-day loop, and the skill's job here is mostly to **orient the user**. For each of the two flows below, explain three things — *what it is*, *where to find it*, and *how to configure it* — then hand off to `triage.md` (in this skill's directory) for the actual step-by-step. Both flows are re-entrant; a user can invoke either one on its own once connected.
 
-## Part C1: Triage the findings on a pull request
+## Part C1: The PR CI check and its findings
 
-When a user opens a PR (open, not draft), Dam Secure runs a CI check on GitHub and records any findings against that branch. **There is no MCP tool for the GitHub check itself**; you triage the findings it produced, scoped by the PR's branch name:
+**What it is.** When a user opens a pull request (open, not draft), the Dam Secure GitHub App runs a CI check on that branch and records any findings against it. The check is a GitHub construct — there is no PR or CI-check object over MCP — so what you actually work with are the *findings it produced*, scoped by the PR's branch name.
 
-1. Get the PR's branch name from the user (or the current branch).
-2. `list_issues branch=<branch>` to see the issues (and a ready-for-review count) for the latest scan on that branch.
-3. `get_issue id=<id> branch=<branch>` for detail, including each `findingId`.
-4. Triage per finding with `confirm_finding` / `dismiss_finding` / `fix_finding` (or whole-issue with `confirm_issue` / `dismiss_issue`). `restore_finding` undoes a triage.
+**Where to find it.**
+- *The check itself* lives on GitHub: the PR's **Checks** / status section shows the Dam Secure run and its pass/fail state.
+- *The findings* are surfaced two ways — in the Dam Secure app, and over MCP via `list_issues branch=<branch>`, which scopes to the latest scan on that branch and exposes a "ready-for-review" count.
 
-See `triage.md` for how to decide finding-level vs issue-level and how to fill dismissal reasons.
+**How to configure it.** The check is wired up by connecting the repo's GitHub App in Part A; there is no MCP toggle for it, and scans run automatically on push/PR (no manual scan-trigger tool). Its behavior — which rules run, severity gating, whether it blocks merge — is configured in the Dam Secure app under the repository's settings.
 
-## Part C2: Triage outstanding issues
+**To triage the findings**, follow Flow C1 in `triage.md` (branch → `list_issues` → `get_issue` → `confirm_finding` / `dismiss_finding` / `fix_finding`).
 
-To work down the backlog independent of any PR:
+## Part C2: Outstanding issues
 
-1. `list_issues status=open` (add `severity`, `repositoryId`, or `ruleId` filters to focus; it is paginated, `pageSize` max 100).
-2. `get_issue` for detail.
-3. Triage as above.
+**What it is.** The standing backlog of open issues across all scans, independent of any single PR — the set you work down over time.
 
-For a large backlog, do not try to grind through everything in one conversation; point the user at the bulk triage view in the Dam Secure app (`https://app.damsecure.ai/issues`) and use MCP triage for the focused set you are actively reviewing.
+**Where to find it.**
+- *Bulk* view in the Dam Secure app: `https://app.damsecure.ai/issues`.
+- *Focused* over MCP via `list_issues status=open`.
+
+**How to configure / focus it.** Narrow with filters — `severity`, `repositoryId`, `ruleId` — and respect pagination (`pageSize` max 100). For a large backlog, use the app's bulk view rather than grinding through hundreds of issues over MCP in one conversation.
+
+**To triage**, follow Flow C2 in `triage.md`.
 
 ---
 
@@ -157,7 +164,7 @@ For a large backlog, do not try to grind through everything in one conversation;
 - **Expecting one login.** There are two OAuth flows: CLI (Step 2) and MCP (Step 4). Tell the user up front so the second prompt isn't a surprise.
 - **Trying to onboard a repo via MCP.** There is no onboarding tool; repositories are connected in the app via the GitHub App. MCP only detects (`list_repositories`) and, later, triages.
 - **Looking for a "CI check" or "scan" tool.** Neither exists. The GitHub check lives on GitHub; scans run automatically on push/PR. You triage the resulting issues/findings, scoped by branch.
-- **Creating a vulnerability rule.** `create_rule` only accepts `type: team`. Built-in vulnerability rules are managed by Dam Secure, not created over MCP.
+- **Trying to create built-in rules over MCP.** `create_rule` makes your own custom rules only; the managed ruleset Dam Secure maintains is not created or edited over MCP.
 - **Reaching for internal tooling.** Do not tell customers to run `ds:triage` or `validate-findings`; those are Dam Secure's own repo skills, not part of this plugin. Use the MCP triage tools and the app's bulk view.
 - **Skipping the editor row.** Steps 2 and 4 differ by editor; follow the row for the editor you're actually running in, not the Claude Code one by default.
 - **Auto-running `curl | bash`.** Always show the command and confirm first; never pipe-to-bash silently.
