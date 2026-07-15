@@ -5,15 +5,15 @@
     "url": "https://damsecure.ai"
   },
   "metadata": {
-    "description": "Dam Secure skills for Claude Code — install the ones you want.",
+    "description": "Dam Secure skills for Claude Code: install the ones you want.",
     "version": "0.1.0"
   },
   "plugins": [
     {
-      "name": "secure-spec-setup",
-      "source": "./plugins/secure-spec-setup",
-      "description": "Guided onboarding for Dam Secure Secure Spec: installs the CLI, discovers and confirms your plans directory, and connects the Secure Spec MCP server.",
-      "keywords": ["secure-spec", "onboarding", "setup", "mcp"]
+      "name": "damsecure-setup",
+      "source": "./plugins/damsecure-setup",
+      "description": "End-to-end Dam Secure onboarding: connect the CLI + MCP (Secure Spec plan review), onboard a repository, review and add rules, and triage PR and issue findings.",
+      "keywords": ["damsecure", "secure-spec", "onboarding", "setup", "triage", "rules", "mcp"]
     }
   ]
 }

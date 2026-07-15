@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Install the Dam Secure "secure-spec-setup" skill for Claude Code and/or Cursor.
-# The skill itself is a portable Agent Skills SKILL.md that both editors read —
+# Install the Dam Secure "damsecure-setup" skill for Claude Code and/or Cursor.
+# The skill itself is a portable Agent Skills SKILL.md that both editors read;
 # only the install directory differs:
 #
 #   Claude Code  ->  .claude/skills/<name>/
@@ -14,10 +14,10 @@
 # Runnable from a clone, or piped:  curl -fsSL <raw>/install.sh | bash
 set -euo pipefail
 
-SKILL="secure-spec-setup"
+SKILL="damsecure-setup"
 REPO_RAW="https://raw.githubusercontent.com/dam-secure/damsecure-skills/main"
 SRC_SUBPATH="plugins/${SKILL}/skills/${SKILL}"
-FILES=("SKILL.md" "discover-plans.md")
+FILES=("SKILL.md" "discover-plans.md" "triage.md")
 
 TOOLS="claude,cursor"
 SCOPE="project"
@@ -64,8 +64,8 @@ for root in "${roots[@]}"; do
 done
 
 echo
-echo "Done. Open your editor in this location and ask it to \"set up Secure Spec\","
-echo "or invoke the skill directly (Claude/Cursor: /secure-spec-setup)."
+echo "Done. Open your editor in this location and ask it to \"set up Dam Secure\","
+echo "or invoke the skill directly (Claude/Cursor: /damsecure-setup)."
 echo "Claude Code users can alternatively use the versioned plugin marketplace:"
 echo "  /plugin marketplace add dam-secure/damsecure-skills"
-echo "  /plugin install secure-spec-setup@damsecure"
+echo "  /plugin install damsecure-setup@damsecure"

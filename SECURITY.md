@@ -4,12 +4,12 @@
 
 `damsecure-skills` is a Claude Code plugin marketplace. Anything merged to `main`
 can be pulled and executed on a customer's machine (skills instruct an agent;
-the `secure-spec-setup` skill runs `curl … | bash`). Treat `main` as a
+the `damsecure-setup` skill runs `curl … | bash`). Treat `main` as a
 release channel: a malicious or accidental change here is a supply-chain issue.
 
 ## Reporting a vulnerability
 
-Please report privately — **do not open a public issue or PR**:
+Please report privately; **do not open a public issue or PR**:
 
 - Email **security@damsecure.ai**, or
 - Use GitHub's **"Report a vulnerability"** (Security → Advisories) on this repo.

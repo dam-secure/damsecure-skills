@@ -1,10 +1,10 @@
 # Plan-discovery subagent brief
 
-Dispatch a read-only subagent with this objective. Do not prescribe a step-by-step search procedure — state the goal and the required output and let the agent explore.
+Dispatch a read-only subagent with this objective. Do not prescribe a step-by-step search procedure; state the goal and the required output and let the agent explore.
 
 ## Objective
 
-Determine where implementation **plans / specs / design docs** live in the current repository, so Secure Spec can be pointed at the right directory. A "plan" is a structured markdown document describing intended work before it's built (a spec, RFC, proposal, design doc, or plan-mode output) — not source code, not a README, not changelogs or issue templates.
+Determine where implementation **plans / specs / design docs** live in the current repository, so Secure Spec can be pointed at the right directory. A "plan" is a structured markdown document describing intended work before it's built (a spec, RFC, proposal, design doc, or plan-mode output), not source code, not a README, not changelogs or issue templates.
 
 ## Signals to weigh (strongest first)
 
