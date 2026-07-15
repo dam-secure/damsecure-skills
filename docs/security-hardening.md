@@ -34,10 +34,17 @@ open source works) but **cannot merge**.
   so untrusted code can't execute in Actions automatically.
 
 ### 4. Actions / CI supply chain: repo-level (applied here)
+- CI triggers on `pull_request` (never `pull_request_target`), so fork PRs get a
+  **read-only token and no secrets**; untrusted code can't exfiltrate secrets or
+  write to the repo even if it runs.
 - Default `GITHUB_TOKEN` permissions set to **read-only**.
 - Workflow declares `permissions: contents: read` explicitly.
-- CI uses only first-party `actions/checkout`; Dependabot keeps it patched
+- CI uses only first-party `actions/checkout`, **pinned to a full commit SHA**
+  (not a movable tag), with **SHA pinning required** repo-wide so no workflow can
+  reintroduce a tag reference. Dependabot keeps the pin patched
   ([`.github/dependabot.yml`](../.github/dependabot.yml)).
+- `allowed_actions` restricted to **GitHub-authored actions only** (not `all`),
+  narrowing what any workflow can pull in.
 
 ### 5. Detection: repo-level (applied here)
 - **Secret scanning** + **push protection** on (blocks committed credentials).
