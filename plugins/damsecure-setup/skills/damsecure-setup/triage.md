@@ -32,6 +32,7 @@ Detailed flow for Phase 3 of `SKILL.md`. Triage is **interactive**: the confirm 
 
 ## Flow C1: Triage a pull request
 
+0. Confirm the check ran. When a PR is opened for review, the **Dam Secure** CI/CD check runs on it automatically. Point the user at the PR's **Checks** section on GitHub to see the Dam Secure run and its pass/fail state; that's the trigger for triage. (There's no CI-check object over MCP — you work with the findings it produced, scoped by branch.)
 1. Establish the branch. Ask for the PR's branch name, or use the current git branch if the user confirms it maps to the PR.
 2. `list_issues branch=<branch>` (optionally `status=open` to hide already-triaged). Summarize: how many issues, by severity, and the ready-for-review count.
 3. For each issue the user wants to look at, `get_issue id=<id> branch=<branch>` and present the findings (file, line, why it fired).
