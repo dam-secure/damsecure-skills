@@ -125,6 +125,15 @@ Keep it to that count-and-categories summary; the point is to show the *shape* o
 
 To scope a rule to specific projects, use `enable_rule_for_project` / `disable_rule_for_project` (project ids come from `get_all_projects_by_repo` or `get_projects_for_rule`). Use `update_rule` to revise an existing rule (it creates a new version under the same `ruleId`).
 
+## Handoff to Phase 3
+
+Once Part B is done, **always surface Phase 3** — don't wait to be asked, and don't ask whether they'd like to triage. Configure and Use are one continuous onboarding; the point of setup is the day-to-day loop, so introduce it every time as a capability they now have.
+
+Frame it as **"did you know you can…"**, not **"would you like to…"**. Tell them, in a sentence or two, that from here on they can triage a pull request's findings or work down their outstanding issues right from the editor, then briefly orient them with Part C1 and C2 below. Let them pick where to go next; the framing is informative, not a yes/no gate.
+
+- ✅ "Now that scanning is set up — did you know you can triage a PR's findings right here in the editor? When you open a PR for review, Dam Secure runs as a CI/CD check and you can work through what it flags. You can also work down your outstanding issues the same way."
+- ❌ "Would you like to move on to triaging findings now?"
+
 ---
 
 # Phase 3: Use (recurring triage)
