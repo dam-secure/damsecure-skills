@@ -1,0 +1,20 @@
+{
+  "name": "damsecure-triage",
+  "description": "Work through Dam Secure security findings and fix them: pull findings from the damsecure MCP into a local worklist, bring each into context, remediate the code with the user, mark it fixed, and move to the next. A comprehensive remediation loop over a PR's findings or the open backlog.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Dam Secure",
+    "url": "https://damsecure.ai"
+  },
+  "homepage": "https://docs.damsecure.ai/secure-spec/installation",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "damsecure",
+    "triage",
+    "remediation",
+    "findings",
+    "fix",
+    "mcp"
+  ]
+}

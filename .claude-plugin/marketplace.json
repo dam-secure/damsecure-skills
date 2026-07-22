@@ -14,6 +14,12 @@
       "source": "./plugins/damsecure-setup",
       "description": "End-to-end Dam Secure onboarding: connect the CLI + MCP (Secure Spec plan review), onboard a repository, review and add rules, and triage PR and issue findings.",
       "keywords": ["damsecure", "secure-spec", "onboarding", "setup", "triage", "rules", "mcp"]
+    },
+    {
+      "name": "damsecure-triage",
+      "source": "./plugins/damsecure-triage",
+      "description": "Work through Dam Secure findings and fix them: pull findings from the MCP into a local worklist, bring each into context, remediate the code with the user, mark it fixed, then move to the next — over a PR or the open backlog.",
+      "keywords": ["damsecure", "triage", "remediation", "findings", "fix", "security", "mcp"]
     }
   ]
 }

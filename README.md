@@ -15,6 +15,7 @@ both editors in the current project; the per-editor options are narrower.
 ```
 /plugin marketplace add dam-secure/damsecure-skills
 /plugin install damsecure-setup@damsecure
+/plugin install damsecure-triage@damsecure
 ```
 
 Updates via `/plugin marketplace update damsecure`. (No script runs; Claude
@@ -50,8 +51,10 @@ Then open your editor there and ask it to "set up Dam Secure", or invoke
 | Skill | What it does | Claude | Cursor |
 |-------|--------------|:------:|:------:|
 | `damsecure-setup` | End-to-end [Dam Secure](https://docs.damsecure.ai/secure-spec/installation) onboarding: connect the CLI + MCP (Secure Spec plan review), onboard a repository, review and add rules, and triage PR and issue findings. | ✅ | ✅ |
+| `damsecure-triage` | Remediation loop over your findings: pull them from the MCP into a local worklist, bring each into context, fix the code with you, mark it fixed, and move to the next — across a PR or the open backlog. | ✅ | ✅ |
 
-_(Each new skill ships as its own installable unit.)_
+_(Each new skill ships as its own installable unit. Install just one with
+`./install.sh --skill damsecure-triage`.)_
 
 ## Why one SKILL.md works everywhere
 
@@ -67,13 +70,18 @@ in, so the same file drives both.
 .claude-plugin/
   marketplace.json          # Claude Code marketplace: lists every plugin
 plugins/
-  damsecure-setup/          # Claude plugin form of the skill
+  damsecure-setup/          # onboarding skill (Claude plugin form)
     .claude-plugin/plugin.json
     skills/damsecure-setup/
       SKILL.md              # the portable, editor-aware skill (source of truth)
       discover-plans.md     # subagent brief for plan discovery
       triage.md             # detailed PR + issue triage flow reference
-install.sh                  # copies a skill into the Cursor/Claude skills dirs
+  damsecure-triage/         # findings remediation-loop skill
+    .claude-plugin/plugin.json
+    skills/damsecure-triage/
+      SKILL.md              # the query → worklist → fix → mark-fixed loop
+      remediation-loop.md   # per-finding remediation playbook
+install.sh                  # copies skills into the Cursor/Claude skills dirs
 docs/                       # design + security-hardening notes
 ```
 
