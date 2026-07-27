@@ -16,6 +16,7 @@ both editors in the current project; the per-editor options are narrower.
 /plugin marketplace add dam-secure/damsecure-skills
 /plugin install damsecure-setup@damsecure
 /plugin install damsecure-triage@damsecure
+/plugin install damsecure-pr-review@damsecure
 ```
 
 Updates via `/plugin marketplace update damsecure`. (No script runs; Claude
@@ -52,6 +53,7 @@ Then open your editor there and ask it to "set up Dam Secure", or invoke
 |-------|--------------|:------:|:------:|
 | `damsecure-setup` | End-to-end [Dam Secure](https://docs.damsecure.ai/secure-spec/installation) onboarding: connect the CLI + MCP (Secure Spec plan review), onboard a repository, review and add rules, and triage PR and issue findings. | ✅ | ✅ |
 | `damsecure-triage` | Remediation loop over your findings: pull them from the MCP into a local worklist, bring each into context, fix the code with you, mark it fixed, and move to the next — across a PR or the open backlog. | ✅ | ✅ |
+| `damsecure-pr-review` | For **automated review agents in CI/CD**: ask Dam Secure for a pull request's scan results with [`get_pr_review`](https://docs.damsecure.ai/mcp/ci-cd), poll until the scan finishes, and fold the findings into your own risk determination. No PR comment, no separate CI check. | ✅ | ✅ |
 
 _(Each new skill ships as its own installable unit. Install just one with
 `./install.sh --skill damsecure-triage`.)_
@@ -81,6 +83,11 @@ plugins/
     skills/damsecure-triage/
       SKILL.md              # the query → worklist → fix → mark-fixed loop
       remediation-loop.md   # per-finding remediation playbook
+  damsecure-pr-review/      # get_pr_review skill for CI/CD review agents
+    .claude-plugin/plugin.json
+    skills/damsecure-pr-review/
+      SKILL.md              # auth → call → poll loop → status contract
+      response-reference.md # response schema, enums, issue/finding shape
 install.sh                  # copies skills into the Cursor/Claude skills dirs
 docs/                       # design + security-hardening notes
 ```
