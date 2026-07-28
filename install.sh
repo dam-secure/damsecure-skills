@@ -18,11 +18,12 @@ set -euo pipefail
 REPO_RAW="https://raw.githubusercontent.com/dam-secure/damsecure-skills/main"
 
 # Skills this installer knows about, and the files each one ships.
-ALL_SKILLS="damsecure-setup,damsecure-triage"
+ALL_SKILLS="damsecure-setup,damsecure-triage,damsecure-pr-review"
 skill_files() {
   case "$1" in
-    damsecure-setup)  echo "SKILL.md discover-plans.md triage.md" ;;
-    damsecure-triage) echo "SKILL.md remediation-loop.md" ;;
+    damsecure-setup)     echo "SKILL.md discover-plans.md triage.md" ;;
+    damsecure-triage)    echo "SKILL.md remediation-loop.md" ;;
+    damsecure-pr-review) echo "SKILL.md response-reference.md" ;;
     *) echo "unknown skill: $1" >&2; return 2 ;;
   esac
 }
@@ -87,8 +88,9 @@ done
 echo
 echo "Done. Open your editor in this location and ask it to \"set up Dam Secure\""
 echo "or \"triage my Dam Secure findings\", or invoke a skill directly"
-echo "(Claude/Cursor: /damsecure-setup, /damsecure-triage)."
+echo "(Claude/Cursor: /damsecure-setup, /damsecure-triage, /damsecure-pr-review)."
 echo "Claude Code users can alternatively use the versioned plugin marketplace:"
 echo "  /plugin marketplace add dam-secure/damsecure-skills"
 echo "  /plugin install damsecure-setup@damsecure"
 echo "  /plugin install damsecure-triage@damsecure"
+echo "  /plugin install damsecure-pr-review@damsecure"
