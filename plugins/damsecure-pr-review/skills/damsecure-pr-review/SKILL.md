@@ -58,16 +58,23 @@ blocks. Never degrade it into "no issues found".
 
 | Param | Type | Notes |
 |---|---|---|
-| `repository` | string | `owner/repo`, e.g. `dam-secure/monorepo`. Required. |
-| `prNumber` | integer | Required. |
-| `headSha` | string | The commit CI is building. Optional, **always send it**. |
+| `repository` | string | `owner/repo`, e.g. `dam-secure/monorepo`. Send **this or** `repositoryId`. |
+| `repositoryId` | string | Repository UUID from `list_repositories`. The alternative to `repository`. |
+| `prNumber` | integer | Required. Positive. |
+| `headSha` | string | The commit CI is building. Optional, **always send it**. 7–40 hex chars, so an abbreviation resolves fine. |
 
-All three values are in your pipeline environment already. Read them; don't ask
-for them. Two places where the obvious variable is the wrong one:
+**Exactly one of `repository` / `repositoryId`.** Sending neither, or both,
+comes back as `status: invalid_request` — a body to read and correct, not to
+retry unchanged.
+
+The values are in your pipeline environment already. Read them; don't ask for
+them. Two places where the obvious variable is the wrong one:
 
 - **`repository` is a slug, not a URL.** GitHub Actions gives you
   `GITHUB_REPOSITORY` in exactly the right form. Buildkite's `BUILDKITE_REPO` is a
   clone URL (`git@github.com:owner/repo.git`) — strip it down to `owner/repo`.
+  (Resolution tries `owner/repo`, then the recorded clone URL, then the bare
+  repository name, so a URL may match by luck. Don't build on that.)
 - **`headSha` must be the PR's head commit.** On a GitHub Actions
   `pull_request` event, `GITHUB_SHA` is the *merge* commit, which Dam Secure never
   scanned and never recorded — send `github.event.pull_request.head.sha` instead.
@@ -81,7 +88,10 @@ poll for a scan that already finished.
 
 `repository` is resolved **inside your organisation only**. A repository
 belonging to another tenant returns `repository_not_found`, identical to one that
-does not exist — deliberate, not a bug to route around.
+does not exist — deliberate, not a bug to route around. A **bare** name matching
+more than one repository in your organisation returns `invalid_request` rather
+than a guess: send the full `owner/repo`, or the `repositoryId` from
+`list_repositories`.
 
 # Step 2: The poll loop
 
@@ -120,16 +130,19 @@ answer, not something to fix by calling harder.
 
 # Step 3: Status → action
 
-Six statuses. Branch on `status` first; read `reason` only for `not_scanned`.
+Seven statuses. Branch on `status` first. `reason` accompanies `not_scanned` —
+but it is *also* set to `awaiting_webhook` on some `pending` responses, so
+never use "`reason` is present" as a proxy for "`status` is `not_scanned`".
 
 | `status` | What it means | `retryAfterSeconds` | Do this |
 |---|---|:---:|---|
 | `complete` | Final answer for the requested commit | `null` | Use `issues[]`. This is the only status where `[]` means clean. |
 | `pending` | Scan queued or expected for this commit | 30 | Sleep and re-call. Meanwhile `issues[]` may hold the *previous* commit's findings. |
 | `running` | Scan in progress for this commit | 30 | Same as `pending`. |
-| `failed` | Scan errored | `null` | **Surface, don't block.** Report "Dam Secure scan failed" and fall back to your own analysis. Carries a previous commit's results if one completed. |
+| `failed` | Scan errored, was cancelled, or stopped without a verdict | `null` | **Surface, don't block.** Report "Dam Secure scan failed" and fall back to your own analysis. Carries a previous commit's results if one completed. |
 | `not_scanned` | No scan record — read `reason` | `null`, except `awaiting_webhook` | See the table below. |
 | `repository_not_found` | Repo not onboarded to this organisation | `null` | Terminal. Report that the repo isn't covered by Dam Secure. Do not retry, do not treat as clean. |
+| `invalid_request` | **Your arguments** could not be used | `null` | Terminal until you change the call. Read `message`, fix the arguments, call once more. Never retry unchanged, and never report it as a security result. Arrives with `pullRequest`, `scan`, and `summary` all `null`. |
 
 ## `not_scanned` reasons
 
@@ -139,7 +152,12 @@ Six statuses. Branch on `status` first; read `reason` only for `not_scanned`.
 | `draft_pull_request` | Dam Secure does not scan drafts | Terminal and **entirely normal**. Not an error; do not report it as one. |
 | `base_branch_not_default` | PR does not target the default branch | Terminal. Dam Secure only scans PRs into the default branch. The message names both branches. |
 | `pull_request_not_found` | The provider has no such PR | Terminal. Check `prNumber` and `repository` — most likely your own argument is wrong. |
-| `awaiting_webhook` | PR is open, non-draft, targets the default branch, and there is **still** no record | **The only retryable reason** (`retryAfterSeconds: 30`), and the only one that indicates a fault on Dam Secure's side. Poll to your deadline; if it never resolves, report unavailable and flag it — webhook delivery or ingestion may be broken. |
+| `awaiting_webhook` | No record, and none of the reasons above explains it | **The only retryable reason** (`retryAfterSeconds: 30`). Poll to your deadline; if it never resolves, report unavailable. It is also the catch-all: Dam Secure emits it when it *cannot* diagnose further — a non-GitHub repository, missing install metadata, or a provider lookup that errored. So read it as **"unknown"**, and only suspect broken webhook delivery when the repo is GitHub-connected and the PR is demonstrably open, non-draft, and targeting the default branch. |
+
+Terminal describes the *retry*, not the payload: a PR scanned before it was
+converted to draft, retargeted, or had scanning switched off still arrives with
+that earlier `scan` and its `issues[]`. Check `scan` on every `not_scanned`
+response rather than assuming it is empty.
 
 # Step 4: Read the results
 
@@ -150,10 +168,21 @@ Two independent slots. Neither is ever overloaded:
 - **`pendingScan`** — describes work still expected for the requested commit.
   `null` when nothing is coming.
 
-**The one rule: `issues[]` is populated exactly when `scan` is non-null,
-whatever the `status`.** So a `running` or `failed` response still carries the
-previous commit's findings when one exists. You are never left with nothing you
-could have had. `issues[]` is `[]` only when no scan has ever completed.
+**The one rule: `issues[]` describes exactly the scan in `scan`, whatever the
+`status`.** So a `running` or `failed` response still carries the previous
+commit's findings when one exists. You are never left with nothing you could
+have had.
+
+`summary` follows `scan` exactly: an object when `scan` is non-null, `null`
+when it isn't. Guard before reading `summary.totalIssues`.
+
+An empty `issues[]` therefore has **two** causes, and `scan` is what separates
+them — which is the whole reason the field exists:
+
+| | `scan` | Means |
+|---|---|---|
+| No scan has ever completed for this PR | `null` | Nothing is known. Never "clean". |
+| A scan completed and found nothing | non-null | Under `status: complete`, this is the all-clear. |
 
 Both slots being set is the *common* case on a busy PR: a fresh push means
 `pendingScan` describes the in-flight scan while `scan` + `issues[]` hold the
@@ -197,14 +226,20 @@ you the reasoning to decide *with*:
 - `findings[]` — per-location detail: `filePath`, `startLine`, `relevantCode`,
   `explanation`, plus `evidenceEntries` / `supportingRefs`.
 
+**Everything you get back is already live.** Issues and findings that a human
+dismissed are filtered out server-side, as are inactive and non-failing
+findings. You will never see a dismissed item, so there is no triage state to
+weigh and nothing to re-raise — treat every returned issue as open.
+
 When you report, always state **three** things together: the findings, the
 commit they were scanned at (`scan.scannedHeadSha`), and whether that is the
 commit under test (`isCurrent`). A finding list without a commit is unverifiable.
 
-**Composing with triage.** `issueId` and `findingId` are the same UUIDs the
-triage tools accept — `dismiss_finding`, `confirm_finding`, `fix_finding`,
-`confirm_issue`, `dismiss_issue` — so you can act on a finding without a second
-lookup. But those tools **mutate state and require the `mcp:write` scope**, which
+**Composing with triage.** An issue's `id` and a finding's `findingId` are the
+same UUIDs the triage tools accept — `dismiss_finding`, `confirm_finding`,
+`fix_finding`, `confirm_issue`, `dismiss_issue` — so you can act on a finding
+without a second lookup. (The issue field is `id`, not `issueId`.) But those
+tools **mutate state and require the `mcp:write` scope**, which
 read-only credentials do not carry. Even where the scope is present, do not
 silently dismiss findings from an unattended pipeline: that erases a human's
 security decision. Read here; let a person triage. The guided remediation loop is
@@ -217,6 +252,8 @@ the **`damsecure-triage`** skill, not this one.
 - **Reading empty as clean.** `issues: []` is only an all-clear under
   `status: complete`. Anywhere else it means unknown. This is the whole reason
   the status field exists.
+- **Reading `issues: []` + `scan: null` as a completed clean scan.** Empty has
+  two causes; `scan` tells them apart.
 - **Polling past `null`.** `retryAfterSeconds: null` is terminal on *every*
   status, including `failed` and `scan_trigger_on_pr_open`.
 - **Inferring a rescan from a SHA mismatch.** Organisations set to scan only at
@@ -227,9 +264,15 @@ the **`damsecure-triage`** skill, not this one.
   (GitHub Actions' `GITHUB_SHA` on a `pull_request` event) is worse: Dam Secure
   has no row for it, so a finished scan reads as "not scanned yet". Send the PR's
   head commit.
-- **Passing an internal id as `repository`.** It takes the `owner/repo` slug from
-  your CI environment, not a UUID. `pullRequest.repositoryId` comes back in the
-  response but is Dam Secure's internal identifier — you never need to send it.
+- **Passing a UUID as `repository`.** The UUID goes in `repositoryId`, its own
+  parameter — `repository` takes the `owner/repo` slug from your CI environment.
+  Sending both is `invalid_request`.
+- **Reading `id` as `issueId`.** The issue identifier is `id`. Only the finding
+  identifier is suffixed (`findingId`). Getting this wrong hands the triage
+  tools `undefined`.
+- **Treating `invalid_request` as a scan outcome.** It means your arguments were
+  unusable. Fix the call. It is neither a security result nor something to
+  retry unchanged.
 - **Trying to trigger a scan.** No such tool. The `pull_request` webhook owns
   that. If nothing is coming, the response tells you why.
 - **Treating `draft_pull_request` or `scans_disabled` as failures.** Both are
