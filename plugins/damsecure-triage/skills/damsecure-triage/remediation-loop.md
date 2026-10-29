@@ -11,9 +11,12 @@ apply it.
 
 - Pull the finding's detail. Reuse what you cached in Step 2; if you need more,
   `get_issue id=<issueId>` (with `branch=` if branch-scoped). Note: `get_issue`
-  returns the **whole issue** (all its findings) — work only the `findingId` this
-  row is about.
-- Note the rule, why it fired, the severity, and the exact `file:line`.
+  returns the **whole issue** (all its findings, untriaged first) — work only the
+  `findings` entry this row is about.
+- Note the rule, why it fired, the severity, and the exact `file:line` (the
+  finding's `where`).
+- Read the issue's `attackStory` when it is not `null`: `whatHasToBeTrue` and
+  `whatStopsThem` are the verifier's case for and against real-world risk.
 - **Read the real code** at that location — the finding's line plus enough
   surrounding context to understand data flow (where the tainted input comes
   from, where the sink is). Don't reason from the finding text alone.
@@ -27,7 +30,10 @@ get the user's verdict. Three outcomes:
   step 3 and fix it.
 - **False positive** (the rule misread the code) → `dismiss_finding` with a `note`
   saying why, or `dismiss_issue` with `dismissalReason=false_positive` if the
-  whole issue is a false positive. Mark the row `dismissed`. Skip to the next.
+  whole issue is a false positive. A mitigation in `whatStopsThem` that fully
+  covers the attack path (check its `location` in the real code), or a
+  `whatHasToBeTrue` precondition that cannot hold here, is grounds — cite it in
+  the note. Mark the row `dismissed`. Skip to the next.
 - **Real but won't fix now** (accepted risk, out of scope, compensating control)
   → dismiss with `dismissalReason=wont_fix` or `accepted_risk` and a `note`, or
   leave `open` and mark the row `skipped` if the user wants to revisit. Their
@@ -87,8 +93,9 @@ When Step 2 has many issues, keep the main context clean by dispatching a
 subagent to enumerate:
 
 > "For each of these issue IDs [...], call `get_issue` and return a compact list:
-> issueId, findingId, severity, rule, file:line, and the one-line reason each
-> finding fired. Return only that structured list — no prose."
+> issueId, findingId (from `findings[].findingId`), severity, rule, file:line
+> (from `findings[].where`), and the one-line reason each finding fired. Return
+> only that structured list — no prose."
 
 Then you write the worklist yourself from its return. Do the *fixing* in the main
 session, though — remediation needs the full repo context and the user in the loop.
