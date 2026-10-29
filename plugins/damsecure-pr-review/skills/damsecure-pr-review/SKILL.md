@@ -217,14 +217,23 @@ need field-level detail.
 Dam Secure returns structured data, not a verdict. You decide. Each issue gives
 you the reasoning to decide *with*:
 
-- `severity` (`critical` / `high` / `medium` / `low` / `info`) and
-  `severityRationale` — *why* it is rated that way.
-- `attackScenario` — the concrete exploit path. The most useful field for
-  judging real-world risk.
-- `confidence`, `cwe`, `source` (`vulnerability` or `team` — a customer-authored
-  rule), and `recommendation`.
+- `attackStory` — the issue page's attack story, and the most useful field for
+  judging real-world risk: `explanation`, `whoWouldDoThis`, `whatHasToBeTrue`
+  (preconditions), `whatStopsThem` (mitigations, each with a `location`),
+  `technicalImpact`, `businessImpact`, `likelihood` (`level` + `rationale`) and
+  `severityRationale`. A mitigation that fully covers the attack path, or a
+  precondition that cannot hold, lowers the real risk — cite it. `attackStory`
+  is `null` when no contextual verification completed for the issue (team rules,
+  the feature off for the organisation, or the verifier did not finish); fall
+  back to `description` and the findings then.
+- `severity` (`critical` / `high` / `medium` / `low` / `info`), `source`
+  (`vulnerability` or `team` — a customer-authored rule), and `recommendation`.
 - `findings[]` — per-location detail: `filePath`, `startLine`, `relevantCode`,
-  `explanation`, plus `evidenceEntries` / `supportingRefs`.
+  `explanation`, plus `additionalEvidence` (locations beyond the primary one)
+  and `supportingRefs`.
+- Deprecated: `lens`, `cwe`, `confidence`, `reachableFrom`, `authorityPath`,
+  `defensesChecked`, `attackScenario` and the issue-level `severityRationale`.
+  They are still returned for now but will be removed; read `attackStory`.
 
 **Everything you get back is already live.** Issues and findings that a human
 dismissed are filtered out server-side, as are inactive and non-failing

@@ -125,21 +125,30 @@ others, report **unavailable** and leave the cause open.
 ```json
 {
   "id": "…",
+  "source": "vulnerability",
   "title": "…",
   "description": "…",
   "severity": "critical",
-  "severityRaw": "critical",
-  "source": "vulnerability",
+  "projectName": "api",
+  "recommendation": "…",
+  "attackStory": {
+    "explanation": "…",
+    "whoWouldDoThis": "…",
+    "whatHasToBeTrue": ["…", "…"],
+    "whatStopsThem": [{ "description": "…", "location": "src/middleware/rateLimit.ts:12" }],
+    "technicalImpact": "…",
+    "businessImpact": "…",
+    "likelihood": { "level": "LIKELY", "rationale": "…" },
+    "severityRationale": "…"
+  },
+  "lens": "…",
   "cwe": ["CWE-89"],
   "confidence": "high",
-  "projectName": "api",
-  "lens": "…",
   "reachableFrom": "…",
   "authorityPath": "…",
   "defensesChecked": "…",
   "attackScenario": "…",
   "severityRationale": "…",
-  "recommendation": "…",
   "findings": [
     {
       "findingId": "…",
@@ -148,7 +157,7 @@ others, report **unavailable** and leave the cause open.
       "startLine": 42,
       "relevantCode": "…",
       "explanation": "…",
-      "evidenceEntries": [
+      "additionalEvidence": [
         { "filePath": "…", "startLine": 1, "relevantCode": "…", "reasoning": "…" }
       ],
       "supportingRefs": [
@@ -163,22 +172,29 @@ others, report **unavailable** and leave the cause open.
 |---|---|
 | `id` | `issues_v2` UUID. Accepted by `get_issue`, `confirm_issue`, `dismiss_issue`. **Not** `issueId` — only the finding identifier carries a suffix. |
 | `severity` | `critical` / `high` / `medium` / `low` / `info`. Drives the sort order. Never null: an issue with no recorded severity reads as `info`. |
-| `severityRaw` | The unnormalised column, `null` when nothing was recorded. Exists so Dam Secure's own blocking check can tell "explicitly info" from "no severity". You want `severity`. |
 | `source` | `vulnerability` (Dam Secure's rules) or `team` (a rule this customer wrote). Both are real findings. |
-| `cwe` | Zero or more CWE identifiers. **May be absent from the payload entirely**, not `null`. |
-| `confidence` | The scanner's confidence. Pair with `severity` when ranking. |
 | `projectName` | Which project inside the repository. `null` for single-project repos. |
-| `lens` | Which vulnerability-review lens produced it. **May be absent from the payload entirely**, not `null`. |
-| `reachableFrom`, `authorityPath`, `defensesChecked` | Reachability and existing-mitigation analysis. Useful for arguing a finding is or isn't exploitable in context. |
-| `attackScenario` | Concrete exploit path. The highest-signal field for real-world risk. |
-| `severityRationale` | Why this severity. Quote it rather than re-deriving. |
 | `recommendation` | Suggested remediation. |
+| `attackStory` | The issue page's attack story, from the issue's lead finding. **The highest-signal field for real-world risk.** `null` when no contextual verification completed (team rules, the feature off, or the verifier did not finish). See below. |
+| `lens`, `cwe`, `confidence`, `reachableFrom`, `authorityPath`, `defensesChecked`, `attackScenario`, `severityRationale` | **Deprecated** — still returned, but will be removed. Read `attackStory` instead. `cwe` and `lens` may be absent from the payload entirely. |
 | `findings[]` | One entry per location. Never empty for a returned issue. |
 
 **There is no triage-status field, by design.** The query behind `issues[]`
 returns only active, failing, non-dismissed findings whose issue is itself
 non-dismissed. Anything a human already dismissed — at either level — is gone
 before you see it. Every returned issue is open; there is no state to weigh.
+
+### Attack story shape
+
+| Field | Notes |
+|---|---|
+| `explanation` | What is wrong, in one short paragraph. |
+| `whoWouldDoThis` | The least-privileged adversary who can reach the code. |
+| `whatHasToBeTrue` | Preconditions, one per entry. One that cannot hold in this codebase is a reason the finding does not apply. |
+| `whatStopsThem` | Mitigations found in the code, each `{ description, location }`. One that fully covers the attack path lowers the real risk — cite its `location`. Empty when nothing stops them. |
+| `technicalImpact`, `businessImpact` | What the attacker gets, and what it costs the customer (assumptions marked). |
+| `likelihood` | `{ level, rationale }`; `level` is `VERY_LIKELY` / `LIKELY` / `UNLIKELY` / `VERY_UNLIKELY`. |
+| `severityRationale` | Why the verifier recommends this severity. Quote it rather than re-deriving. |
 
 ### Finding shape
 
@@ -189,12 +205,12 @@ before you see it. Every returned issue is open; there is no state to weigh.
 | `filePath`, `startLine` | Location. May be `null`; handle that rather than assuming a line number. |
 | `relevantCode` | The offending snippet, as scanned. |
 | `explanation` | Why the rule fired here. |
-| `evidenceEntries` | Supporting locations that establish the vulnerability. |
+| `additionalEvidence` | Further locations that establish the vulnerability, after the primary one in `filePath` / `startLine` / `relevantCode`. Often empty. |
 | `supportingRefs` | Related context that is not itself the vulnerability. |
 
 Guard your formatting: on an issue, every field except `id`, `title`, `source`,
 `severity`, and `findings[]` may be missing or `null`; on a finding, everything
-except `findingId`, `evidenceEntries`, and `supportingRefs`. Note the two
+except `findingId`, `additionalEvidence`, and `supportingRefs`. Note the two
 different flavours of absent — `cwe` and `lens` are omitted from the JSON when
 unset, while the rest are explicitly `null`, so `issue.cwe?.length ?? 0` is safe
 and `issue.cwe.length` is not.

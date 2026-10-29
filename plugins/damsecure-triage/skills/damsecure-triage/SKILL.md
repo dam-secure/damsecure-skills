@@ -46,8 +46,13 @@ Steps 3–5 repeat per finding. The detailed per-finding playbook lives in
 - **Issue** — a group of findings from one rule. Has `id`, `severity`, `status`
   (`open` / `acknowledged` / `dismissed`), `ruleId`.
 - **Finding** — one scan result at one location, inside an issue. Has a
-  `findingId`. **You only get `findingId`s from `get_issue`**, never from
+  `findingId`. You get `findingId`s from `findings[].findingId` in `get_issue`
+  (or in `get_pr_review` when reviewing a pull request), never from
   `list_issues`. Remediation (`fix_finding` / `dismiss_finding`) is per-finding.
+- **Attack story** — `get_issue` returns `attackStory`: who would exploit it,
+  `whatHasToBeTrue` (preconditions), `whatStopsThem` (mitigations with a
+  `location`), impact and likelihood. `null` when no contextual verification
+  completed (team rules, for example).
 - **Branch scoping** — `list_issues` / `get_issue` take a `branch` filter that
   scopes to the *latest scan on that branch* and exposes a "ready-for-review"
   count. This is how PR results are surfaced; there is no PR or CI-check object
@@ -57,8 +62,8 @@ Steps 3–5 repeat per finding. The detailed per-finding playbook lives in
 
 | Tool | Args | Use |
 |------|------|-----|
-| `list_issues` | `status?`, `severity?`, `branch?`, `repositoryId?`, `ruleId?`, `title?`, `scanId?`, `sort?`, `page?`, `pageSize?` (max 100) | Query the scope. Paginated. |
-| `get_issue` | `id`, `branch?` | Detail + the `findingId`s for one issue. |
+| `list_issues` | `status?`, `severity?`, `source?`, `branch?`, `repositoryId?`, `ruleId?`, `title?`, `scanId?`, `sort?`, `page?`, `pageSize?` (max 100) | Query the scope. Paginated, terse rows (location, finding counts, likelihood). |
+| `get_issue` | `id`, `branch?`, `includeEvidence?` | The attack story, the fix, and the `findingId`s for one issue. |
 | `confirm_finding` | `issueId`, `findingId` | Mark a finding a genuine vulnerability. |
 | `fix_finding` | `issueId`, `findingId` | Mark a finding remediated. **Only after the code fix is applied and verified.** |
 | `dismiss_finding` | `issueId`, `findingId`, `note?` | Mark a finding a false positive / not relevant. |
