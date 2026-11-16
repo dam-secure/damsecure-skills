@@ -1,21 +1,19 @@
 {
   "name": "damsecure-setup",
-  "description": "End-to-end Dam Secure onboarding: connect the CLI + MCP (Secure Spec plan review), onboard a repository, review and add rules, and triage PR and issue findings.",
-  "version": "0.2.0",
+  "description": "End-to-end Dam Secure onboarding: connect the MCP server, onboard a repository, turn on pull request scans, and triage PR and issue findings.",
+  "version": "0.3.0",
   "author": {
     "name": "Dam Secure",
     "url": "https://damsecure.ai"
   },
-  "homepage": "https://docs.damsecure.ai/secure-spec/installation",
+  "homepage": "https://docs.damsecure.ai/mcp/installation",
   "license": "MIT",
   "keywords": [
     "security",
     "damsecure",
-    "secure-spec",
     "onboarding",
     "setup",
     "triage",
-    "rules",
     "mcp"
   ]
 }

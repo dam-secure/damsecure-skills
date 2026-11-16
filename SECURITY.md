@@ -4,7 +4,7 @@
 
 `damsecure-skills` is a Claude Code plugin marketplace. Anything merged to `main`
 can be pulled and executed on a customer's machine (skills instruct an agent;
-the `damsecure-setup` skill runs `curl … | bash`). Treat `main` as a
+the `damsecure-setup` skill edits the editor's MCP config). Treat `main` as a
 release channel: a malicious or accidental change here is a supply-chain issue.
 
 ## Reporting a vulnerability

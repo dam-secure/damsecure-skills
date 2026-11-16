@@ -21,7 +21,7 @@ REPO_RAW="https://raw.githubusercontent.com/dam-secure/damsecure-skills/main"
 ALL_SKILLS="damsecure-setup,damsecure-triage,damsecure-pr-review"
 skill_files() {
   case "$1" in
-    damsecure-setup)     echo "SKILL.md discover-plans.md triage.md" ;;
+    damsecure-setup)     echo "SKILL.md triage.md" ;;
     damsecure-triage)    echo "SKILL.md remediation-loop.md" ;;
     damsecure-pr-review) echo "SKILL.md response-reference.md" ;;
     *) echo "unknown skill: $1" >&2; return 2 ;;
