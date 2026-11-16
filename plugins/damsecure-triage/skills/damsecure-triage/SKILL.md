@@ -24,9 +24,8 @@ to trigger the browser OAuth), then come back.
 
 > Tool names below are written bare (`list_issues`, `get_issue`, `fix_finding`).
 > Invoke them under whatever prefix your editor registered the server with — in
-> Claude Code that is `mcp__damsecure__<tool>` when installed via the CLI, or
-> `mcp__plugin_damsecure_damsecure__<tool>` when installed via the plugin
-> marketplace. Use whichever `*_list_issues` tool is actually present.
+> Claude Code that is commonly `mcp__damsecure__<tool>`. Use whichever
+> `*_list_issues` tool is actually present.
 
 ## The five steps
 

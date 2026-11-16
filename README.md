@@ -51,7 +51,7 @@ Then open your editor there and ask it to "set up Dam Secure", or invoke
 
 | Skill | What it does | Claude | Cursor |
 |-------|--------------|:------:|:------:|
-| `damsecure-setup` | End-to-end [Dam Secure](https://docs.damsecure.ai/secure-spec/installation) onboarding: connect the CLI + MCP (Secure Spec plan review), onboard a repository, review and add rules, and triage PR and issue findings. | ✅ | ✅ |
+| `damsecure-setup` | End-to-end [Dam Secure](https://docs.damsecure.ai/mcp/installation) onboarding: connect the MCP server, onboard a repository, turn on pull request scans, and triage PR and issue findings. | ✅ | ✅ |
 | `damsecure-triage` | Remediation loop over your findings: pull them from the MCP into a local worklist, bring each into context, fix the code with you, mark it fixed, and move to the next — across a PR or the open backlog. | ✅ | ✅ |
 | `damsecure-pr-review` | For **automated review agents in CI/CD**: ask Dam Secure for a pull request's scan results with [`get_pr_review`](https://docs.damsecure.ai/mcp/ci-cd), poll until the scan finishes, and fold the findings into your own risk determination. No PR comment, no separate CI check. | ✅ | ✅ |
 
@@ -62,8 +62,8 @@ _(Each new skill ships as its own installable unit. Install just one with
 
 `SKILL.md` (YAML frontmatter `name` + `description`, then a markdown body) is the
 open Agent Skills standard, read by both Claude Code and Cursor. The
-`damsecure-setup` skill is editor-aware in the two steps that differ (post-install
-reload, MCP auth) and tells the agent to follow the row for the editor it's running
+`damsecure-setup` skill is editor-aware in the two steps that differ (adding the
+MCP server, MCP auth) and tells the agent to follow the row for the editor it's running
 in, so the same file drives both.
 
 ## Layout
@@ -76,7 +76,6 @@ plugins/
     .claude-plugin/plugin.json
     skills/damsecure-setup/
       SKILL.md              # the portable, editor-aware skill (source of truth)
-      discover-plans.md     # subagent brief for plan discovery
       triage.md             # detailed PR + issue triage flow reference
   damsecure-triage/         # findings remediation-loop skill
     .claude-plugin/plugin.json
